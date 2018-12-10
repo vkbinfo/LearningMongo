@@ -9,7 +9,11 @@ const {
     TODO
 } = require('../models/todo')
 const dbURI = 'mongodb://localhost:27017/TodoApp';
-Mongoose.connect(dbURI, { useNewUrlParser: true } );
+Mongoose.connect(dbURI, { useNewUrlParser: true } ).then((success)=> {
+    console.log('Mongodb connected with ' + dbURI);
+}, (error) => {
+    console.error('Unsuccessful db connection', error);
+});
 
 const app = express();
 app.use(bodyParser.json());
@@ -34,6 +38,15 @@ app.post('/todo/new', (req, res) => {
         res.send(doc);
     }, (err) => {
         res.status(400).send(err);
+    })
+})
+
+// getting all todo
+app.get('/todos', (req, res) => {
+    TODO.find().then((todos)=>{
+        res.send({todos})
+    }, (error) => {
+        res.status(400).send(error)
     })
 })
 
