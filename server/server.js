@@ -1,4 +1,5 @@
-const Mongoose = require('mongoose');
+const Mongoose  = require('mongoose');
+const {ObjectId} = require('mongodb');
 const express = require('express');
 const bodyParser = require('body-parser');
 
@@ -45,6 +46,19 @@ app.post('/todo/new', (req, res) => {
 app.get('/todos', (req, res) => {
     TODO.find().then((todos)=>{
         res.send({todos})
+    }, (error) => {
+        res.status(400).send(error)
+    })
+})
+
+// getting a specific todo from the given url params 
+app.get('/todos/:id', (req, res) => {
+    const id = req.params.id;
+    if (!ObjectId.isValid(id)){
+        return res.status(400).send({Error: 'Id is not valid'})
+    }
+    TODO.findById(id).then((todo)=>{
+        res.send({todo})
     }, (error) => {
         res.status(400).send(error)
     })
