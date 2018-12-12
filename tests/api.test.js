@@ -172,7 +172,9 @@ describe('GET /todos/:id', () => {
     const id = '5c0fe904b174bd0f11a39026';
     const objectId = ObjectId(id);
     const testText = 'This is for one doc'
+
     beforeEach((done) => {
+        TODO.findByIdAndRemove(objectId).then((res) => {}, (err) => {})
         const newTodo = new TODO({
             _id: objectId,
             text: testText
@@ -185,6 +187,35 @@ describe('GET /todos/:id', () => {
         })
         
     })
+
+    it('should handle wrong id and return some message about wrong id message', (done) => {
+        request(app)
+            .get('/todos/' + id +'2345')
+            .expect(400)
+            .expect((response) => {
+                expect(response.body.Error).toBe('Id is not valid');
+            })
+            .end((error, result) => {
+                if (error) {
+                    return done(error);
+                }
+                done();
+            })
+    })
+
+    it('should response with not found document message with a id which does not exist in the database', (done) => {
+        const idWhichDoesNotExist = '9c0fe904b174bd0f11a39026'
+        request(app)
+            .get('/todos/' + idWhichDoesNotExist)
+            .expect(404)
+            .end((error, result) => {
+                if (error) {
+                    return done(error);
+                }
+                done();
+            })
+    })
+
     it('should get the one specific todo according to url', (done) => {
         request(app)
             .get('/todos/' + id)

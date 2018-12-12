@@ -1,5 +1,7 @@
-const Mongoose  = require('mongoose');
-const {ObjectId} = require('mongodb');
+const Mongoose = require('mongoose');
+const {
+    ObjectId
+} = require('mongodb');
 const express = require('express');
 const bodyParser = require('body-parser');
 
@@ -10,10 +12,12 @@ const {
     TODO
 } = require('../models/todo')
 const dbURI = 'mongodb://localhost:27017/TodoApp';
-Mongoose.connect(dbURI, { useNewUrlParser: true } ).then((success)=> {
-    console.log('Mongodb connected with ' + dbURI);
-}, (error) => {
-    console.error('Unsuccessful db connection', error);
+Mongoose.connect(dbURI, {
+useNewUrlParser: true
+}).then((success) => {
+console.log('Mongodb connected with ' + dbURI);
+}).catch((error) => {
+console.error('Unsuccessful db connection', error);
 });
 
 const app = express();
@@ -44,8 +48,10 @@ app.post('/todo/new', (req, res) => {
 
 // getting all todo
 app.get('/todos', (req, res) => {
-    TODO.find().then((todos)=>{
-        res.send({todos})
+    TODO.find().then((todos) => {
+        res.send({
+            todos
+        })
     }, (error) => {
         res.status(400).send(error)
     })
@@ -54,11 +60,18 @@ app.get('/todos', (req, res) => {
 // getting a specific todo from the given url params 
 app.get('/todos/:id', (req, res) => {
     const id = req.params.id;
-    if (!ObjectId.isValid(id)){
-        return res.status(400).send({Error: 'Id is not valid'})
+    if (!ObjectId.isValid(id)) {
+        return res.status(400).send({
+            Error: 'Id is not valid'
+        })
     }
-    TODO.findById(id).then((todo)=>{
-        res.send({todo})
+    TODO.findById(id).then((todo) => {
+        if (!todo) {
+            return res.status(404).send();
+        }
+        res.send({
+            todo
+        })
     }, (error) => {
         res.status(400).send(error)
     })
