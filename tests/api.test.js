@@ -169,8 +169,7 @@ describe('POST /todo/new', () => {
 
 // test for getting one todo from the database
 describe('GET /todos/:id', () => {
-    const id = '5c0fe904b174bd0f11a39026';
-    const objectId = ObjectId(id);
+    const objectId = new ObjectId();
     const testText = 'This is for one doc'
 
     beforeEach((done) => {
@@ -188,9 +187,10 @@ describe('GET /todos/:id', () => {
         
     })
 
-    it('should handle wrong id and return some message about wrong id message', (done) => {
+    it('should handle wrong/invalid id and return some message about wrong id message', (done) => {
+        const randomObjectIdString = new ObjectId().toHexString();
         request(app)
-            .get('/todos/' + id +'2345')
+            .get(`/todos/${randomObjectIdString}`+ '1234' )
             .expect(400)
             .expect((response) => {
                 expect(response.body.Error).toBe('Id is not valid');
@@ -204,9 +204,9 @@ describe('GET /todos/:id', () => {
     })
 
     it('should response with not found document message with a id which does not exist in the database', (done) => {
-        const idWhichDoesNotExist = '9c0fe904b174bd0f11a39026'
+        const randomObjectIdString = new ObjectId().toHexString();
         request(app)
-            .get('/todos/' + idWhichDoesNotExist)
+            .get('/todos/' + randomObjectIdString)
             .expect(404)
             .end((error, result) => {
                 if (error) {
@@ -218,7 +218,7 @@ describe('GET /todos/:id', () => {
 
     it('should get the one specific todo according to url', (done) => {
         request(app)
-            .get('/todos/' + id)
+            .get('/todos/' + objectId.toHexString())
             .expect(200)
             .expect((response) => {
                 expect(response.body.todo.text).toBe(testText);
