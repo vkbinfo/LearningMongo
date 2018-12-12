@@ -1,5 +1,8 @@
 const expect = require('expect');
 const request = require('supertest'); // a library for testing express app
+const {
+    ObjectId
+} = require('mongodb');
 
 const {
     app
@@ -113,6 +116,81 @@ describe('GET /todos', () => {
             .expect(200)
             .expect((response) => {
                 expect(response.body.todos.length).toBe(2);
+            })
+            .end((error, result) => {
+                if (error) {
+                    return done(error);
+                }
+                done();
+            })
+    })
+})
+
+describe('POST /todo/new', () => {
+    const testText = 'Be a better asshole person.';
+    beforeEach((done) => {
+        TODO.deleteMany({
+            text: testText
+        }, (err) => {
+            if (err) {
+                return done(err);
+            }
+            done();
+        })
+    })
+
+    it('should insert a new record in the todo collection', (done) => {
+        request(app)
+            .post('/todo/new')
+            .send({
+                text: testText
+            })
+            .expect(200)
+            .expect((response) => {
+                expect(response.body.text).toBe(testText);
+                expect(response.body.completedAt).toBe(null);
+                expect(response.body.completed).toBe(false);
+            })
+            .end((error, result) => {
+                if (error) {
+                    return done(error);
+                }
+                TODO.find({
+                    text: testText
+                }).then((doc) => {
+                    expect(doc[0].text).toBe(testText);
+                    expect(doc[0].completedAt).toBe(null);
+                    expect(doc[0].completed).toBe(false);
+                    done();
+                })
+            })
+    })
+})
+
+// test for getting one todo from the database
+describe('GET /todos/:id', () => {
+    const id = '5c0fe904b174bd0f11a39026';
+    const objectId = ObjectId(id);
+    const testText = 'This is for one doc'
+    beforeEach((done) => {
+        const newTodo = new TODO({
+            _id: objectId,
+            text: testText
+        });
+        newTodo.save().then((result) => {
+            done();
+        }).catch((error) => {
+            console.error('Something failing while inserting');
+            done();
+        })
+        
+    })
+    it('should get the one specific todo according to url', (done) => {
+        request(app)
+            .get('/todos/' + id)
+            .expect(200)
+            .expect((response) => {
+                expect(response.body.todo.text).toBe(testText);
             })
             .end((error, result) => {
                 if (error) {
