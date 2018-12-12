@@ -11,7 +11,12 @@ const {
 const {
     TODO
 } = require('../models/todo')
-const dbURI = 'mongodb://localhost:27017/TodoApp';
+
+// getting PORT number from environment for Heroku deployment.
+const port = process.env.PORT || 3000
+
+const dbURI = process.env.MongoDB_URI || 'mongodb://localhost:27017/TodoApp';
+
 Mongoose.connect(dbURI, {
 useNewUrlParser: true
 }).then((success) => {
@@ -77,8 +82,8 @@ app.get('/todos/:id', (req, res) => {
     })
 })
 
-app.listen(3000, () => {
-    console.log('NodeJS server started with expressJS on the port 3000');
+app.listen(port, () => {
+    console.log(`NodeJS server started with expressJS on the port ${port}`);
 })
 
 module.exports = {
