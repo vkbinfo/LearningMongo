@@ -95,8 +95,7 @@ describe('POST /todo/new', () => {
 // test for getting all the todos from the database
 describe('GET /todos', () => {
     beforeEach((done) => {
-        TODO.remove().then((docs) => {}).catch((error) => {});
-        done();
+        TODO.deleteMany().then((docs) => {done()}).catch((error) => {done(error)});
     })
 
     it('should get all the todos in the response body', (done) => {
@@ -221,6 +220,71 @@ describe('GET /todo/:id', () => {
             .expect(200)
             .expect((response) => {
                 expect(response.body.todo.text).toBe(testText);
+            })
+            .end((error, result) => {
+                if (error) {
+                    return done(error);
+                }
+                done();
+            })
+    })
+})
+
+// test for deleting one todo from the database
+describe('Delete /todo/:id', () => {
+    const objectId = new ObjectId();
+    const testText = 'This is for one doc'
+
+    beforeEach((done) => {
+        TODO.findByIdAndDelete(objectId).then((res) => {}, (err) => {})
+        const newTodo = new TODO({
+            _id: objectId,
+            text: testText
+        });
+        newTodo.save().then((result) => {
+            done();
+        }).catch((error) => {
+            console.error('Something failing while inserting');
+            done();
+        })
+        
+    })
+
+    it('should handle wrong/invalid id and return some message about wrong id message', (done) => {
+        const randomObjectIdString = new ObjectId().toHexString();
+        request(app)
+            .delete(`/todo/${randomObjectIdString}`+ '1234' )
+            .expect(400)
+            .expect((response) => {
+                expect(response.body.Error).toBe('Id is not valid');
+            })
+            .end((error, result) => {
+                if (error) {
+                    return done(error);
+                }
+                done();
+            })
+    })
+
+    it('should response with not found document message with a id which does not exist in the database', (done) => {
+        const randomObjectIdString = new ObjectId().toHexString();
+        request(app)
+            .delete('/todo/' + randomObjectIdString)
+            .expect(404)
+            .end((error, result) => {
+                if (error) {
+                    return done(error);
+                }
+                done();
+            })
+    })
+
+    it('should get the one specific todo according to url', (done) => {
+        request(app)
+            .delete('/todo/' + objectId.toHexString())
+            .expect(200)
+            .expect((response) => {
+                expect(response.body.result).toBe('Successfully Deleted');
             })
             .end((error, result) => {
                 if (error) {

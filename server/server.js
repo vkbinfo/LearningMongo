@@ -92,7 +92,6 @@ app.delete('/todo/:id', (req, res) => {
         })
     }
     TODO.findByIdAndDelete(id).then((todo) => {
-        console.log('todo',todo);
         if (!todo) {
             return res.status(404).send('No Record Found with this id.');
         }
