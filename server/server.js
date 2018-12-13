@@ -1,5 +1,6 @@
 const _ = require('lodash');
 const Mongoose = require('mongoose');
+Mongoose.set('useFindAndModify', false); // setting to close down the deprecation warning for findByIdAndUpdate command.
 const {
     ObjectId
 } = require('mongodb');
@@ -96,9 +97,8 @@ app.patch('/todo/:id', (req, res) => {
     if (_.isBoolean(todoBody.completed) && todoBody.completed) {
         todoBody.completedAt = new Date().getTime();
     }
-    console.log('updated todo', todoBody);
     TODO.findByIdAndUpdate(id, {
-        $set: todoBody
+        $set: todoBody // these are mongodb operators that are required to update something in the doc
     }, {
         new: true // just tells mongoose to return the updated doc
     }).then((updatedTodo) => {

@@ -171,18 +171,20 @@ describe('GET /todo/:id', () => {
     const testText = 'This is for one doc'
 
     beforeEach((done) => {
-        TODO.findByIdAndDelete(objectId).then((res) => {}, (err) => {})
         const newTodo = new TODO({
             _id: objectId,
             text: testText
         });
-        newTodo.save().then((result) => {
-            done();
-        }).catch((error) => {
-            console.error('Something failing while inserting');
-            done();
+        TODO.findByIdAndDelete(objectId).then((res) => {
+            newTodo.save().then((result) => {
+                done();
+            }).catch((error) => {
+                console.error('Something failing while inserting with error:', error);
+                done();
+            })
+        }, (err) => {
+            done(err)
         })
-        
     })
 
     it('should handle wrong/invalid id and return some message about wrong id message', (done) => {
@@ -230,24 +232,100 @@ describe('GET /todo/:id', () => {
     })
 })
 
+// test for updating/patch one todo from the database
+describe('Patch /todo/:id', () => {
+    const objectId = new ObjectId();
+    const testText = 'Document before update/patch'
+
+    beforeEach((done) => {
+        const newTodo = new TODO({
+            _id: objectId,
+            text: testText
+        });
+        TODO.findByIdAndDelete(objectId).then((res) => {
+            newTodo.save().then((result) => {
+                done();
+            }).catch((error) => {
+                console.error('Something failing while inserting with error:', error);
+                done();
+            })
+        }, (err) => {
+            done(err)
+        })
+    })
+
+    it('should handle wrong/invalid id and return some message about wrong id message', (done) => {
+        const randomObjectIdString = new ObjectId().toHexString();
+        request(app)
+            .delete(`/todo/${randomObjectIdString}`+ '1234' )
+            .expect(400)
+            .expect((response) => {
+                expect(response.body.Error).toBe('Id is not valid');
+            })
+            .end((error, result) => {
+                if (error) {
+                    return done(error);
+                }
+                done();
+            })
+    })
+
+    it('should response with not found document message with a id which does not exist in the database', (done) => {
+        const randomObjectIdString = new ObjectId().toHexString();
+        request(app)
+            .delete('/todo/' + randomObjectIdString)
+            .expect(404)
+            .end((error, result) => {
+                if (error) {
+                    return done(error);
+                }
+                done();
+            })
+    })
+
+    it('should update the one specific todo according to url', (done) => {
+        const newUpdatedTodoData = {
+            text: 'Document after update/patch',
+            completed: true
+        }
+        request(app)
+            .patch('/todo/' + objectId.toHexString())
+            .send(newUpdatedTodoData)
+            .expect(200)
+            .expect((response) => {
+                expect(response.body.text).toBe(newUpdatedTodoData.text);
+                expect(response.body.completed).toBeTruthy();
+                expect(response.body.completedAt).toBeTruthy();
+            })
+            .end((error, result) => {
+                if (error) {
+                    return done(error);
+                }
+                done();
+            })
+    })
+})
+
 // test for deleting one todo from the database
 describe('Delete /todo/:id', () => {
     const objectId = new ObjectId();
     const testText = 'This is for one doc'
 
     beforeEach((done) => {
-        TODO.findByIdAndDelete(objectId).then((res) => {}, (err) => {})
         const newTodo = new TODO({
             _id: objectId,
             text: testText
         });
-        newTodo.save().then((result) => {
-            done();
-        }).catch((error) => {
-            console.error('Something failing while inserting');
-            done();
+        TODO.findByIdAndDelete(objectId).then((res) => {
+            newTodo.save().then((result) => {
+                done();
+            }).catch((error) => {
+                console.error('Something failing while inserting with error:', error);
+                done();
+            })
+        }, (err) => {
+            done(err)
         })
-        
     })
 
     it('should handle wrong/invalid id and return some message about wrong id message', (done) => {
