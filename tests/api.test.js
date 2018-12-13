@@ -279,7 +279,7 @@ describe('Delete /todo/:id', () => {
             })
     })
 
-    it('should get the one specific todo according to url', (done) => {
+    it('should delete the one specific todo according to url', (done) => {
         request(app)
             .delete('/todo/' + objectId.toHexString())
             .expect(200)
@@ -290,7 +290,10 @@ describe('Delete /todo/:id', () => {
                 if (error) {
                     return done(error);
                 }
-                done();
+                TODO.findById(objectId.toHexString()).then((todo) => {
+                    expect(todo).toBeFalsy()
+                    done();
+                }).catch((error) => done(error))
             })
     })
 })
