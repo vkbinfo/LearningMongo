@@ -1,3 +1,5 @@
+// setting config for this app
+require('../config');
 const _ = require('lodash');
 const Mongoose = require('mongoose');
 Mongoose.set('useFindAndModify', false); // setting to close down the deprecation warning for findByIdAndUpdate command.
@@ -17,7 +19,7 @@ const {
 // getting PORT number from environment for Heroku deployment.
 const port = process.env.PORT || 3000
 
-const dbURI = process.env.MongoDB_URI || 'mongodb://localhost:27017/TodoApp';
+const dbURI = process.env.MongoDB_URI;
 
 Mongoose.connect(dbURI, {
 useNewUrlParser: true
