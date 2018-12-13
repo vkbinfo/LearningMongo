@@ -63,7 +63,7 @@ app.get('/todos', (req, res) => {
 })
 
 // getting a specific todo from the given url params 
-app.get('/todos/:id', (req, res) => {
+app.get('/todo/:id', (req, res) => {
     const id = req.params.id;
     if (!ObjectId.isValid(id)) {
         return res.status(400).send({
@@ -84,7 +84,7 @@ app.get('/todos/:id', (req, res) => {
 
 
 // getting a specific todo from the given url params 
-app.delete('/todos/:id', (req, res) => {
+app.delete('/todo/:id', (req, res) => {
     const id = req.params.id;
     if (!ObjectId.isValid(id)) {
         return res.status(400).send({

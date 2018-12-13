@@ -95,10 +95,9 @@ describe('POST /todo/new', () => {
 // test for getting all the todos from the database
 describe('GET /todos', () => {
     beforeEach((done) => {
-        TODO.deleteMany().then((docs) => {}).catch((error) => {});
+        TODO.remove().then((docs) => {}).catch((error) => {});
         done();
     })
-
 
     it('should get all the todos in the response body', (done) => {
         const newTodos = [{
@@ -168,12 +167,12 @@ describe('POST /todo/new', () => {
 })
 
 // test for getting one todo from the database
-describe('GET /todos/:id', () => {
+describe('GET /todo/:id', () => {
     const objectId = new ObjectId();
     const testText = 'This is for one doc'
 
     beforeEach((done) => {
-        TODO.findByIdAndRemove(objectId).then((res) => {}, (err) => {})
+        TODO.findByIdAndDelete(objectId).then((res) => {}, (err) => {})
         const newTodo = new TODO({
             _id: objectId,
             text: testText
@@ -190,7 +189,7 @@ describe('GET /todos/:id', () => {
     it('should handle wrong/invalid id and return some message about wrong id message', (done) => {
         const randomObjectIdString = new ObjectId().toHexString();
         request(app)
-            .get(`/todos/${randomObjectIdString}`+ '1234' )
+            .get(`/todo/${randomObjectIdString}`+ '1234' )
             .expect(400)
             .expect((response) => {
                 expect(response.body.Error).toBe('Id is not valid');
@@ -206,7 +205,7 @@ describe('GET /todos/:id', () => {
     it('should response with not found document message with a id which does not exist in the database', (done) => {
         const randomObjectIdString = new ObjectId().toHexString();
         request(app)
-            .get('/todos/' + randomObjectIdString)
+            .get('/todo/' + randomObjectIdString)
             .expect(404)
             .end((error, result) => {
                 if (error) {
@@ -218,7 +217,7 @@ describe('GET /todos/:id', () => {
 
     it('should get the one specific todo according to url', (done) => {
         request(app)
-            .get('/todos/' + objectId.toHexString())
+            .get('/todo/' + objectId.toHexString())
             .expect(200)
             .expect((response) => {
                 expect(response.body.todo.text).toBe(testText);
