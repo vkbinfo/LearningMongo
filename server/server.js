@@ -1,3 +1,4 @@
+const _ = require('lodash');
 const Mongoose = require('mongoose');
 const {
     ObjectId
@@ -82,8 +83,35 @@ app.get('/todo/:id', (req, res) => {
     })
 })
 
+// Patching a specific todo from the given url params 
+app.patch('/todo/:id', (req, res) => {
+    const id = req.params.id;
+    if (!ObjectId.isValid(id)) {
+        return res.status(400).send({
+            Error: 'Id is not valid'
+        })
+    }
+    // it just creates a new object with given keys
+    const todoBody = _.pick(req.body, ['text', 'completed'])
+    if (_.isBoolean(todoBody.completed) && todoBody.completed) {
+        todoBody.completedAt = new Date().getTime();
+    }
+    console.log('updated todo', todoBody);
+    TODO.findByIdAndUpdate(id, {
+        $set: todoBody
+    }, {
+        new: true // just tells mongoose to return the updated doc
+    }).then((updatedTodo) => {
+        if (!updatedTodo) {
+            return res.status(404).send('No Record Found with this id.');
+        }
+        res.send(updatedTodo)
+    }, (error) => {
+        res.status(400).send(error)
+    })
+})
 
-// getting a specific todo from the given url params 
+// deleting a specific todo from the given url params 
 app.delete('/todo/:id', (req, res) => {
     const id = req.params.id;
     if (!ObjectId.isValid(id)) {
@@ -102,6 +130,8 @@ app.delete('/todo/:id', (req, res) => {
         res.status(400).send(error)
     })
 })
+
+
 
 app.listen(port, () => {
     console.log(`NodeJS server started with expressJS on the port ${port}`);
