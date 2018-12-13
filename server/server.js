@@ -84,7 +84,7 @@ app.get('/todo/:id', (req, res) => {
     })
 })
 
-// Patching a specific todo from the given url params 
+// Patching/updating a specific todo from the given url params 
 app.patch('/todo/:id', (req, res) => {
     const id = req.params.id;
     if (!ObjectId.isValid(id)) {
@@ -96,6 +96,8 @@ app.patch('/todo/:id', (req, res) => {
     const todoBody = _.pick(req.body, ['text', 'completed'])
     if (_.isBoolean(todoBody.completed) && todoBody.completed) {
         todoBody.completedAt = new Date().getTime();
+    } else if(!todoBody.completed){
+        todoBody.completedAt = null;
     }
     TODO.findByIdAndUpdate(id, {
         $set: todoBody // these are mongodb operators that are required to update something in the doc

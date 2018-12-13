@@ -283,7 +283,7 @@ describe('Patch /todo/:id', () => {
             })
     })
 
-    it('should update the one specific todo according to url', (done) => {
+    it('should update the one specific todo when completed is true in body', (done) => {
         const newUpdatedTodoData = {
             text: 'Document after update/patch',
             completed: true
@@ -296,6 +296,27 @@ describe('Patch /todo/:id', () => {
                 expect(response.body.text).toBe(newUpdatedTodoData.text);
                 expect(response.body.completed).toBeTruthy();
                 expect(response.body.completedAt).toBeTruthy();
+            })
+            .end((error, result) => {
+                if (error) {
+                    return done(error);
+                }
+                done();
+            })
+    })
+    it('should clear out the completedAt of the one specific todo when completed is false in body', (done) => {
+        const newUpdatedTodoData = {
+            text: 'Document after update/patch',
+            completed: false
+        }
+        request(app)
+            .patch('/todo/' + objectId.toHexString())
+            .send(newUpdatedTodoData)
+            .expect(200)
+            .expect((response) => {
+                expect(response.body.text).toBe(newUpdatedTodoData.text);
+                expect(response.body.completed).toBeFalsy();
+                expect(response.body.completedAt).toBeFalsy();
             })
             .end((error, result) => {
                 if (error) {
