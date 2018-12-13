@@ -82,6 +82,28 @@ app.get('/todos/:id', (req, res) => {
     })
 })
 
+
+// getting a specific todo from the given url params 
+app.delete('/todos/:id', (req, res) => {
+    const id = req.params.id;
+    if (!ObjectId.isValid(id)) {
+        return res.status(400).send({
+            Error: 'Id is not valid'
+        })
+    }
+    TODO.findByIdAndDelete(id).then((todo) => {
+        console.log('todo',todo);
+        if (!todo) {
+            return res.status(404).send('No Record Found with this id.');
+        }
+        res.send({
+            result: 'Successfully Deleted'
+        })
+    }, (error) => {
+        res.status(400).send(error)
+    })
+})
+
 app.listen(port, () => {
     console.log(`NodeJS server started with expressJS on the port ${port}`);
 })
