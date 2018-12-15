@@ -11,7 +11,7 @@ const bodyParser = require('body-parser');
 
 const {
     USER
-} = require('../models/users');
+} = require('../models/user');
 const {
     TODO
 } = require('../models/todo')
@@ -33,13 +33,15 @@ const app = express();
 app.use(bodyParser.json());
 
 app.post('/user/new', (req, res) => {
-    const newUser = USER({
-        email: req.body.email
-    })
+    // it just creates a new object with given keys
+    const newUser =new USER(_.pick(req.body, ['email', 'password']));
     newUser.save().then((doc) => {
-        res.send(doc);
+        newUser.generateAuthToken().then((token) => {
+            res.header('x-auth', token).send(newUser);
+        })
     }, (err) => {
-        res.status(400).send(err);
+        console.error('Validation Error', err);
+        res.status(400).send(err.message);
     })
 })
 

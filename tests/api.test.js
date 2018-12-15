@@ -9,7 +9,7 @@ const {
 } = require('../server/server');
 const {
     USER
-} = require('../models/users');
+} = require('../models/user');
 const {
     TODO
 } = require('../models/todo');
