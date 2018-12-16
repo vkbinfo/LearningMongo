@@ -16,6 +16,7 @@ const {
 
 describe('POST /user/new', () => {
     const testEmail = 'test@gmail.com';
+    const password = 'testDatabasPassword'
     beforeEach((done) => {
         USER.deleteMany({
             email: testEmail
@@ -31,7 +32,8 @@ describe('POST /user/new', () => {
         request(app)
             .post('/user/new')
             .send({
-                email: testEmail
+                email: testEmail,
+                password: password
             })
             .expect(200)
             .expect((response) => {
@@ -104,12 +106,8 @@ describe('GET /todos', () => {
         }, {
             text: 'It is not something'
         }]
-        TODO.insertMany(newTodos).then((docs) => {})
-            .catch((error) => {
-                console.log('failed insertion of records in the database for GET /todos testing', error)
-                done();
-            });
-        request(app)
+        TODO.insertMany(newTodos).then((docs) => {
+            request(app)
             .get('/todos')
             .expect(200)
             .expect((response) => {
@@ -121,6 +119,10 @@ describe('GET /todos', () => {
                 }
                 done();
             })
+        }).catch((error) => {
+            console.log('failed insertion of records in the database for GET /todos testing', error)
+            done();
+        });
     })
 })
 
