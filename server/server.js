@@ -3,30 +3,25 @@ require('../config');
 const _ = require('lodash');
 const Mongoose = require('mongoose');
 Mongoose.set('useFindAndModify', false); // setting to close down the deprecation warning for findByIdAndUpdate command.
-const {
-    ObjectId
-} = require('mongodb');
+const { ObjectId } = require('mongodb');
 const express = require('express');
 const bodyParser = require('body-parser');
 
-const {
-    USER
-} = require('../models/user');
-const {
-    TODO
-} = require('../models/todo')
+const { USER } = require('../models/user');
+const { TODO } = require('../models/todo');
+
+//importing middleware
+const { authenticate } = require('../middleware/authenticate');
 
 // getting PORT number from environment for Heroku deployment.
 const port = process.env.PORT || 3000
 
 const dbURI = process.env.MongoDB_URI;
 
-Mongoose.connect(dbURI, {
-useNewUrlParser: true
-}).then((success) => {
-console.log('Mongodb connected with ' + dbURI);
+Mongoose.connect(dbURI, { useNewUrlParser: true }).then((success) => {
+    console.log('Mongodb connected with ' + dbURI);
 }).catch((error) => {
-console.error('Unsuccessful db connection', error);
+    console.error('Unsuccessful db connection', error);
 });
 
 const app = express();
@@ -43,6 +38,10 @@ app.post('/user/new', (req, res) => {
         console.error('Validation Error', err);
         res.status(400).send(err.message);
     })
+})
+
+app.get('/user/me', authenticate, (req, res) => {
+    res.send(req.user);
 })
 
 app.post('/todo/new', (req, res) => {
