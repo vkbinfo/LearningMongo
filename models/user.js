@@ -1,6 +1,7 @@
 const Mongoose = require('mongoose');
 const validator = require('validator');
 const jwt = require('jsonwebtoken');
+const bcrypt = require('bcryptjs');
 
 const APP_SECRET = 'authsecretthatrequiresforJWTTokens';
 
@@ -60,6 +61,21 @@ userSchema.statics.findByToken = function (token) {
     }
     return USER.findOne({_id: decoded._id, 'tokens.access': decoded.access, 'tokens.token':token})
 }
+
+// Adding a middleware or a hook before calling the save function on the document
+userSchema.pre('save', function (next) {
+    const user = this;
+    if (user.isModified('password')) { // isModified checks if the given parameter field is modified or not
+        bcrypt.genSalt(10, (error, salt) => { // if you want to make this process long, so login attempts can be reduced, just increase the salt round parameter, here that parameter is 10
+            bcrypt.hash(user.password, salt, (error, hash)=> {
+                user.password = hash;
+                next();
+            })
+        })
+    } else {
+        next()
+    }
+})
 const USER = Mongoose.model('User', userSchema);
 
 
