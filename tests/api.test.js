@@ -14,67 +14,73 @@ const {
     TODO
 } = require('../models/todo');
 
-describe('POST /user/new', () => {
-    const testEmail = 'test@gmail.com';
-    const password = 'testDatabasPassword'
-    beforeEach((done) => {
-        USER.deleteMany({
-            email: testEmail
-        }, (err) => {
-            if (err) {
-                return done(err);
+const { todos, users, populateUsers, populateTodos } = require('./seed');
+
+beforeEach(populateUsers);
+beforeEach(populateTodos);
+describe('Testing on api of User create, login and logout', () => {    
+    
+    describe('POST /user/new', () => {    
+        it('should insert a new record in the User Collection', (done) => {
+            const newUser = {
+                "email": "test123@gmail.com",
+                "password": "testPassword"
             }
-            done();
+            request(app)
+                .post('/user/new')
+                .send(newUser)
+                .expect(200)
+                .expect((response) => {
+                    expect(response.body.email).toBe(newUser.email)
+                })
+                .end((error, result) => {
+                    if (error) {
+                        return done(error);
+                    }
+                    USER.find({
+                        email: newUser.email
+                    }).then((doc) => {
+                        expect(doc[0].email).toBe(newUser.email);
+                        done();
+                    })
+                })
         })
     })
 
-    it('should insert a new record in the User Collection', (done) => {
-        request(app)
-            .post('/user/new')
-            .send({
-                email: testEmail,
-                password: password
-            })
+    describe('GET /user/me', () => {
+        it('Should return a user if user is authenticated', (done) => {
+            request(app)
+            .get('/user/me')
+            .set('x-auth', users[0].tokens[0].token)
             .expect(200)
-            .expect((response) => {
-                expect(response.body.email).toBe(testEmail)
+            .expect((res) => {
+                expect(res.body.email).toBe(users[0].email);
             })
-            .end((error, result) => {
-                if (error) {
-                    return done(error);
-                }
-                USER.find({
-                    email: testEmail
-                }).then((doc) => {
-                    expect(doc[0].email).toBe(testEmail);
-                    done();
-                })
-            })
+            .end(done);
+        })
+        
+        it('Should return 401 if user is not auth', (done) => {
+            request(app)
+            .get('/user/me')
+            .expect(401)
+            .end(done);
+            
+        })
     })
 })
 
 describe('POST /todo/new', () => {
-    const testText = 'Be a better asshole person.';
-    beforeEach((done) => {
-        TODO.deleteMany({
-            text: testText
-        }, (err) => {
-            if (err) {
-                return done(err);
-            }
-            done();
-        })
-    })
 
     it('should insert a new record in the todo collection', (done) => {
+        const newTodo = {
+            text: 'I am here to do something.'
+        }
         request(app)
             .post('/todo/new')
-            .send({
-                text: testText
-            })
+            .send(newTodo)
             .expect(200)
             .expect((response) => {
-                expect(response.body.text).toBe(testText);
+                expect(response.body.text).toBe(newTodo.text);
                 expect(response.body.completedAt).toBe(null);
                 expect(response.body.completed).toBe(false);
             })
@@ -83,9 +89,9 @@ describe('POST /todo/new', () => {
                     return done(error);
                 }
                 TODO.find({
-                    text: testText
+                    text: newTodo.text
                 }).then((doc) => {
-                    expect(doc[0].text).toBe(testText);
+                    expect(doc[0].text).toBe(newTodo.text);
                     expect(doc[0].completedAt).toBe(null);
                     expect(doc[0].completed).toBe(false);
                     done();
@@ -96,98 +102,25 @@ describe('POST /todo/new', () => {
 
 // test for getting all the todos from the database
 describe('GET /todos', () => {
-    beforeEach((done) => {
-        TODO.deleteMany().then((docs) => {done()}).catch((error) => {done(error)});
-    })
 
     it('should get all the todos in the response body', (done) => {
-        const newTodos = [{
-            text: 'It is something'
-        }, {
-            text: 'It is not something'
-        }]
-        TODO.insertMany(newTodos).then((docs) => {
-            request(app)
-            .get('/todos')
-            .expect(200)
-            .expect((response) => {
-                expect(response.body.todos.length).toBe(2);
-            })
-            .end((error, result) => {
-                if (error) {
-                    return done(error);
-                }
-                done();
-            })
-        }).catch((error) => {
-            console.log('failed insertion of records in the database for GET /todos testing', error)
-            done();
-        });
-    })
-})
-
-describe('POST /todo/new', () => {
-    const testText = 'Be a better asshole person.';
-    beforeEach((done) => {
-        TODO.deleteMany({
-            text: testText
-        }, (err) => {
-            if (err) {
-                return done(err);
+        request(app)
+        .get('/todos')
+        .expect(200)
+        .expect((response) => {
+            expect(response.body.todos.length).toBe(2);
+        })
+        .end((error, result) => {
+            if (error) {
+                return done(error);
             }
             done();
         })
-    })
-
-    it('should insert a new record in the todo collection', (done) => {
-        request(app)
-            .post('/todo/new')
-            .send({
-                text: testText
-            })
-            .expect(200)
-            .expect((response) => {
-                expect(response.body.text).toBe(testText);
-                expect(response.body.completedAt).toBe(null);
-                expect(response.body.completed).toBe(false);
-            })
-            .end((error, result) => {
-                if (error) {
-                    return done(error);
-                }
-                TODO.find({
-                    text: testText
-                }).then((doc) => {
-                    expect(doc[0].text).toBe(testText);
-                    expect(doc[0].completedAt).toBe(null);
-                    expect(doc[0].completed).toBe(false);
-                    done();
-                })
-            })
     })
 })
 
 // test for getting one todo from the database
 describe('GET /todo/:id', () => {
-    const objectId = new ObjectId();
-    const testText = 'This is for one doc'
-
-    beforeEach((done) => {
-        const newTodo = new TODO({
-            _id: objectId,
-            text: testText
-        });
-        TODO.findByIdAndDelete(objectId).then((res) => {
-            newTodo.save().then((result) => {
-                done();
-            }).catch((error) => {
-                console.error('Something failing while inserting with error:', error);
-                done();
-            })
-        }, (err) => {
-            done(err)
-        })
-    })
 
     it('should handle wrong/invalid id and return some message about wrong id message', (done) => {
         const randomObjectIdString = new ObjectId().toHexString();
@@ -220,10 +153,10 @@ describe('GET /todo/:id', () => {
 
     it('should get the one specific todo according to url', (done) => {
         request(app)
-            .get('/todo/' + objectId.toHexString())
+            .get('/todo/' + todos[0]._id.toHexString())
             .expect(200)
             .expect((response) => {
-                expect(response.body.todo.text).toBe(testText);
+                expect(response.body.todo.text).toBe(todos[0].text);
             })
             .end((error, result) => {
                 if (error) {
@@ -236,15 +169,9 @@ describe('GET /todo/:id', () => {
 
 // test for updating/patch one todo from the database
 describe('Patch /todo/:id', () => {
-    const objectId = new ObjectId();
-    const testText = 'Document before update/patch'
-
     beforeEach((done) => {
-        const newTodo = new TODO({
-            _id: objectId,
-            text: testText
-        });
-        TODO.findByIdAndDelete(objectId).then((res) => {
+        TODO.findByIdAndDelete(todos[0]._id).then((res) => {
+            const newTodo = new TODO(todos[0])
             newTodo.save().then((result) => {
                 done();
             }).catch((error) => {
@@ -291,7 +218,7 @@ describe('Patch /todo/:id', () => {
             completed: true
         }
         request(app)
-            .patch('/todo/' + objectId.toHexString())
+            .patch('/todo/' + todos[0]._id)
             .send(newUpdatedTodoData)
             .expect(200)
             .expect((response) => {
@@ -306,13 +233,14 @@ describe('Patch /todo/:id', () => {
                 done();
             })
     })
+
     it('should clear out the completedAt of the one specific todo when completed is false in body', (done) => {
         const newUpdatedTodoData = {
             text: 'Document after update/patch',
             completed: false
         }
         request(app)
-            .patch('/todo/' + objectId.toHexString())
+            .patch('/todo/' + todos[0]._id)
             .send(newUpdatedTodoData)
             .expect(200)
             .expect((response) => {
@@ -331,15 +259,9 @@ describe('Patch /todo/:id', () => {
 
 // test for deleting one todo from the database
 describe('Delete /todo/:id', () => {
-    const objectId = new ObjectId();
-    const testText = 'This is for one doc'
-
     beforeEach((done) => {
-        const newTodo = new TODO({
-            _id: objectId,
-            text: testText
-        });
-        TODO.findByIdAndDelete(objectId).then((res) => {
+        TODO.findByIdAndDelete(todos[0]._id).then((res) => {
+            const newTodo = new TODO(todos[0])
             newTodo.save().then((result) => {
                 done();
             }).catch((error) => {
@@ -382,7 +304,7 @@ describe('Delete /todo/:id', () => {
 
     it('should delete the one specific todo according to url', (done) => {
         request(app)
-            .delete('/todo/' + objectId.toHexString())
+            .delete('/todo/' + todos[0]._id)
             .expect(200)
             .expect((response) => {
                 expect(response.body.result).toBe('Successfully Deleted');
@@ -391,7 +313,7 @@ describe('Delete /todo/:id', () => {
                 if (error) {
                     return done(error);
                 }
-                TODO.findById(objectId.toHexString()).then((todo) => {
+                TODO.findById(todos[0]._id.toHexString()).then((todo) => {
                     expect(todo).toBeFalsy()
                     done();
                 }).catch((error) => done(error))

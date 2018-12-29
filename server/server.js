@@ -136,11 +136,11 @@ app.delete('/todo/:id', (req, res) => {
     })
 })
 
-
-
-app.listen(port, () => {
-    console.log(`NodeJS server started with expressJS on the port ${port}`);
-})
+if(!module.parent){
+    app.listen(port, () => {
+        console.log(`NodeJS server started with expressJS on the port ${port}`);
+    })
+}
 
 module.exports = {
     app
