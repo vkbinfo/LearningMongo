@@ -44,6 +44,18 @@ app.get('/user/me', authenticate, (req, res) => {
     res.send(req.user);
 })
 
+// route to login a user
+app.post('/user/login', (req, res) => {
+    const userCred = _.pick(req.body, ['email', 'password'])
+    USER.findByCredentials(userCred.email, userCred.password).then((user) => {
+        user.generateAuthToken().then((token) => {
+            res.header('x-auth', token).send(user);
+        })
+    }).catch((error) => {
+        res.status(400).send(error);
+    })
+})
+
 app.post('/todo/new', (req, res) => {
     const newTodo = new TODO({
         text: req.body.text

@@ -62,6 +62,27 @@ userSchema.statics.findByToken = function (token) {
     return USER.findOne({_id: decoded._id, 'tokens.access': decoded.access, 'tokens.token':token})
 }
 
+userSchema.statics.findByCredentials = function (email, password) {
+    const USER = this;
+    return USER.findOne({email: email}).then((user) => {
+        if(!user) {
+            return Promise.reject('User does not Exist');
+        }
+        return new Promise((resolve, reject) => {
+            bcrypt.compare(password, user.password, (err, res) => {
+                if(err) {
+                    return reject('Something went wrong');
+                } 
+                if(!res) {
+                    return reject('Wrong Password');
+                }
+                resolve(user);
+            })
+        }) 
+    })
+    
+}
+
 // Adding a middleware or a hook before calling the save function on the document
 userSchema.pre('save', function (next) {
     const user = this;
