@@ -82,10 +82,38 @@ describe('Testing on api of User create, login and logout', () => {
                 .end(done);
         })
 
-        it('Should return 401 if user is not auth', (done) => {
+        it('Should return 401 if user is not authorized', (done) => {
             request(app)
                 .get('/user/me')
                 .expect(401)
+                .end(done);
+
+        })
+    })
+
+    describe('POST /user/login', () => {
+        it('Should respond with a auth token when the request is send with right credentials', (done) => {
+            request(app)
+                .post('/user/login')
+                .send({
+                    "email": users[1].email,
+                    "password": users[1].password
+                })
+                .expect(200)
+                .expect((res) => {
+                    expect(res.headers['x-auth']).toBeTruthy();
+                })
+                .end(done);
+        })
+
+        it('Should return 400 if request for login is not valid', (done) => {
+            request(app)
+                .post('/user/login')
+                .send({
+                    email: users[0].email,
+                    password: users[0].password + '35'
+                })
+                .expect(400)
                 .end(done);
 
         })
