@@ -6,7 +6,7 @@ const {
 
 const {
     app
-} = require('../server/server');
+} = require('../server');
 const {
     USER
 } = require('../models/user');
@@ -14,23 +14,30 @@ const {
     TODO
 } = require('../models/todo');
 
-const { todos, users, populateUsers, populateTodos } = require('./seed');
+const {
+    todos,
+    users,
+    populateUsers,
+    populateTodos
+} = require('./seed');
 
 beforeEach(populateUsers);
 beforeEach(populateTodos);
-describe('Testing on api of User create, login and logout', () => {    
-    
-    describe('POST /user/new', () => {    
-        it('should insert a new record in the User Collection', (done) => {
-            const newUser = {
+describe('Testing on api of User create, login and logout', () => {
+
+    describe('POST /user/new', () => {
+        const newUser = {
                 "email": "test123@gmail.com",
                 "password": "testPassword"
             }
+
+        it('should insert a new record in the User Collection', (done) => {
             request(app)
                 .post('/user/new')
                 .send(newUser)
                 .expect(200)
                 .expect((response) => {
+                    expect(response.headers['x-auth']).toBeTruthy();
                     expect(response.body.email).toBe(newUser.email)
                 })
                 .end((error, result) => {
@@ -45,26 +52,42 @@ describe('Testing on api of User create, login and logout', () => {
                     })
                 })
         })
+
+        it('should handle user creation if we send no email in the body ', (done) => {
+            request(app)
+                .post('/user/new')
+                .send({"newUser": 'password', "password": 'password'})
+                .expect(400)
+                .end(done);
+        })
+
+        it('should handle user creation if the email is already in use ', (done) => {
+            request(app)
+                .post('/user/new')
+                .send({"email": users[0].email, "password": "nothigtoremember" })
+                .expect(400)
+                .end(done);
+        })
     })
 
     describe('GET /user/me', () => {
         it('Should return a user if user is authenticated', (done) => {
             request(app)
-            .get('/user/me')
-            .set('x-auth', users[0].tokens[0].token)
-            .expect(200)
-            .expect((res) => {
-                expect(res.body.email).toBe(users[0].email);
-            })
-            .end(done);
+                .get('/user/me')
+                .set('x-auth', users[0].tokens[0].token)
+                .expect(200)
+                .expect((res) => {
+                    expect(res.body.email).toBe(users[0].email);
+                })
+                .end(done);
         })
-        
+
         it('Should return 401 if user is not auth', (done) => {
             request(app)
-            .get('/user/me')
-            .expect(401)
-            .end(done);
-            
+                .get('/user/me')
+                .expect(401)
+                .end(done);
+
         })
     })
 })
@@ -105,17 +128,17 @@ describe('GET /todos', () => {
 
     it('should get all the todos in the response body', (done) => {
         request(app)
-        .get('/todos')
-        .expect(200)
-        .expect((response) => {
-            expect(response.body.todos.length).toBe(2);
-        })
-        .end((error, result) => {
-            if (error) {
-                return done(error);
-            }
-            done();
-        })
+            .get('/todos')
+            .expect(200)
+            .expect((response) => {
+                expect(response.body.todos.length).toBe(2);
+            })
+            .end((error, result) => {
+                if (error) {
+                    return done(error);
+                }
+                done();
+            })
     })
 })
 
@@ -125,7 +148,7 @@ describe('GET /todo/:id', () => {
     it('should handle wrong/invalid id and return some message about wrong id message', (done) => {
         const randomObjectIdString = new ObjectId().toHexString();
         request(app)
-            .get(`/todo/${randomObjectIdString}`+ '1234' )
+            .get(`/todo/${randomObjectIdString}` + '1234')
             .expect(400)
             .expect((response) => {
                 expect(response.body.Error).toBe('Id is not valid');
@@ -186,7 +209,7 @@ describe('Patch /todo/:id', () => {
     it('should handle wrong/invalid id and return some message about wrong id message', (done) => {
         const randomObjectIdString = new ObjectId().toHexString();
         request(app)
-            .delete(`/todo/${randomObjectIdString}`+ '1234' )
+            .delete(`/todo/${randomObjectIdString}` + '1234')
             .expect(400)
             .expect((response) => {
                 expect(response.body.Error).toBe('Id is not valid');
@@ -276,7 +299,7 @@ describe('Delete /todo/:id', () => {
     it('should handle wrong/invalid id and return some message about wrong id message', (done) => {
         const randomObjectIdString = new ObjectId().toHexString();
         request(app)
-            .delete(`/todo/${randomObjectIdString}`+ '1234' )
+            .delete(`/todo/${randomObjectIdString}` + '1234')
             .expect(400)
             .expect((response) => {
                 expect(response.body.Error).toBe('Id is not valid');

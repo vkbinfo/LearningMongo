@@ -1,5 +1,5 @@
 // setting config for this app
-require('../config');
+require('./config');
 const _ = require('lodash');
 const Mongoose = require('mongoose');
 Mongoose.set('useFindAndModify', false); // setting to close down the deprecation warning for findByIdAndUpdate command.
@@ -7,11 +7,11 @@ const { ObjectId } = require('mongodb');
 const express = require('express');
 const bodyParser = require('body-parser');
 
-const { USER } = require('../models/user');
-const { TODO } = require('../models/todo');
+const { USER } = require('./models/user');
+const { TODO } = require('./models/todo');
 
 //importing middleware
-const { authenticate } = require('../middleware/authenticate');
+const { authenticate } = require('./middleware/authenticate');
 
 // getting PORT number from environment for Heroku deployment.
 const port = process.env.PORT || 3000
