@@ -56,6 +56,14 @@ app.post('/user/login', (req, res) => {
     })
 })
 
+// route to logout the user by deleting the token from db
+app.delete('/user/delete/token', authenticate, (req, res) => {
+    req.user.removeToken(req.token).then((res) => {
+        res.status(200).send();
+    }).catch(() => {
+        res.status(200).send();
+    })
+})
 app.post('/todo/new', (req, res) => {
     const newTodo = new TODO({
         text: req.body.text

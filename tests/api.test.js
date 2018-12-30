@@ -23,6 +23,7 @@ const {
 
 beforeEach(populateUsers);
 beforeEach(populateTodos);
+
 describe('Testing on api of User create, login and logout', () => {
 
     describe('POST /user/new', () => {
