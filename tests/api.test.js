@@ -119,6 +119,22 @@ describe('Testing on api of User create, login and logout', () => {
 
         })
     })
+
+    describe('Logout from token Delete /user/delete/token', () => {
+        it('Should logout from the server by deleting token from db', (done) => {
+            request(app)
+                .delete('/user/delete/token')
+                .set('x-auth', users[0].tokens[0].token)
+                .expect(200)
+                .expect((res) => {
+                    USER.findOne({ _id: users[0]._id }).then((user) => {
+                        expect(user.tokens.length).toBe(0);
+                    })
+                })
+                .end(done);
+        })
+
+    })
 })
 
 describe('POST /todo/new', () => {

@@ -35,7 +35,6 @@ app.post('/user/new', (req, res) => {
             res.header('x-auth', token).send(newUser);
         })
     }, (err) => {
-        console.error('Validation Error', err);
         res.status(400).send(err.message);
     })
 })
